@@ -1,0 +1,207 @@
+ /* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+/* LAYOUT */
+.container {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+/* MOBILE FIX */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+    margin: 20px auto;
+  }
+}
+/* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 20px;
+  color: #2563eb;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+/* BUTTON */
+button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.logout {
+  background: #ef4444;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav-links a {
+  color: #475569;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.nav-links a:hover {
+  color: #2563eb;
+}
+
+.logo{
+  text-decoration: none;
+}
+
+.logout:hover {
+  background: #dc2626;
+}
+
+/* INPUT */
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5f5;
+  background: white;
+  color: #0f172a;
+}
+
+/* CARD */
+.card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* TABLET */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.task-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* STATS */
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.stat-card h3 {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.stat-card p {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* PROJECT ROW */
+.project-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 12px;
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+
+/* TASK CARD */
+.task-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.task-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.task-email {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* AUTH */
+.auth-container {
+  height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 350px;
+}
+
+/* USER BADGE */
+.user-badge {
+  background: #eef2ff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
