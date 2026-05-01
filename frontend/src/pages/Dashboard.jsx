@@ -19,17 +19,27 @@ export default function Dashboard() {
   }, []);
 
   const load = async () => {
+  try {
     const p = await getProjects(token);
-    setProjects(p || []);
+    const safeProjects = Array.isArray(p) ? p : [];
+
+    setProjects(safeProjects);
 
     let allTasks = [];
-    for (let proj of p) {
-      const t = await getTasks(proj._id, token);
-      allTasks = [...allTasks, ...t];
-    }
-    setTasks(allTasks);
-  };
 
+    for (let proj of safeProjects) {
+      const t = await getTasks(proj._id, token);
+      const safeTasks = Array.isArray(t) ? t : [];
+      allTasks = [...allTasks, ...safeTasks];
+    }
+
+    setTasks(allTasks);
+  } catch (err) {
+    console.error("Dashboard load failed", err);
+    setProjects([]);
+    setTasks([]);
+  }
+};
   // status breakdown
   const statusCount = {
     Todo: 0,
@@ -38,8 +48,10 @@ export default function Dashboard() {
   };
 
   tasks.forEach((t) => {
+  if (statusCount[t.status] !== undefined) {
     statusCount[t.status]++;
-  });
+  }
+});
 
   const chartData = Object.keys(statusCount).map((key) => ({
     name: key,

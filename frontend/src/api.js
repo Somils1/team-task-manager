@@ -1,45 +1,52 @@
  const API = import.meta.env.VITE_API_URL;
 
-// AUTH
-export const loginUser = async (email, password) => {
+/* =========================
+   Helper: handle response
+========================= */
+const handleResponse = async (res) => {
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Request failed");
+  }
+
+  return data;
+};
+
+/* =========================
+   AUTH
+========================= */
+export const loginUser = async ({ email, password }) => {
   const res = await fetch(`${API}/api/auth/login`, {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  return res.json();
+
+  return handleResponse(res);
 };
 
-export const signupUser = async (name, email, password) => {
+export const signupUser = async ({ name, email, password }) => {
   const res = await fetch(`${API}/api/auth/signup`, {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, email, password }),
   });
-  return res.json();
+
+  return handleResponse(res);
 };
 
-
-
-// PROJECTS
+/* =========================
+   PROJECTS
+========================= */
 export const getProjects = async (token) => {
   const res = await fetch(`${API}/api/projects`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
-};
-
-
-
-export const deleteProject = async (projectId, token) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/projects/${projectId}`, {
-    method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 
-  return res.json();
+  return handleResponse(res);
 };
 
 export const createProject = async (name, token) => {
@@ -51,11 +58,33 @@ export const createProject = async (name, token) => {
     },
     body: JSON.stringify({ name }),
   });
-  return res.json();
+
+  return handleResponse(res);
+};
+
+export const deleteProject = async (projectId, token) => {
+  const res = await fetch(`${API}/api/projects/${projectId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return handleResponse(res);
+};
+
+export const getProject = async (id, token) => {
+  const res = await fetch(`${API}/api/projects/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return handleResponse(res);
 };
 
 export const addMember = async (id, email, token) => {
-  return fetch(`${API}/api/projects/${id}/add-member`, {
+  const res = await fetch(`${API}/api/projects/${id}/add-member`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -63,43 +92,49 @@ export const addMember = async (id, email, token) => {
     },
     body: JSON.stringify({ email }),
   });
+
+  return handleResponse(res);
 };
 
 export const removeMember = async (id, userId, token) => {
-  return fetch(`${API}/api/projects/${id}/remove-member/${userId}`, {
+  const res = await fetch(`${API}/api/projects/${id}/remove-member/${userId}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
+
+  return handleResponse(res);
 };
 
-export const getProject = async (id, token) => {
-  const res = await fetch(`${API}/api/projects/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
-};
-
-// TASKS
+/* =========================
+   TASKS
+========================= */
 export const getTasks = async (projectId, token) => {
   const res = await fetch(`${API}/api/tasks/project/${projectId}`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
-  return res.json();
+
+  return handleResponse(res);
 };
 
-export const createTask = async (data, token) => {
-  return fetch(`${API}/api/tasks`, {
+export const createTask = async (taskData, token) => {
+  const res = await fetch(`${API}/api/tasks`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(taskData),
   });
+
+  return handleResponse(res);
 };
 
 export const updateTask = async (id, status, token) => {
-  return fetch(`${API}/api/tasks/${id}`, {
+  const res = await fetch(`${API}/api/tasks/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -107,4 +142,6 @@ export const updateTask = async (id, status, token) => {
     },
     body: JSON.stringify({ status }),
   });
+
+  return handleResponse(res);
 };
