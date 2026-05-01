@@ -56,10 +56,10 @@ export default function Tasks() {
   };
 
   // ✅ SAFE ROLE CALCULATION
-  const isAdmin =
-    project &&
-    (project.admin?._id === user?._id ||
-      project.admin === user?._id);
+const isAdmin = project && (
+  (typeof project.admin === "object" && project.admin._id === user?._id) ||
+  (typeof project.admin === "string" && project.admin === user?._id)
+);
 
   // ✅ PREVENT WRONG UI RENDER
   if (!project) {
