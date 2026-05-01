@@ -58,8 +58,11 @@ export default function Tasks() {
   };
 
   // ✅ ROLE LOGIC
-  const myRole =
-    project?.admin === user?._id ? "admin" : "member";
+const myRole =
+  project?.admin?._id === user?._id ||
+  project?.admin === user?._id
+    ? "admin"
+    : "member";
 
   return (
     <div className="container">
