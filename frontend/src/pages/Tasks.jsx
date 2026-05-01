@@ -11,12 +11,10 @@ export default function Tasks() {
   const [assignedTo, setAssignedTo] = useState("");
   const [members, setMembers] = useState([]);
 
-  // ✅ NEW: due date
   const [dueDate, setDueDate] = useState("");
 
-  // ✅ NEW: user + project
   const user = JSON.parse(localStorage.getItem("user"));
-  const [project, setProject] = useState({});
+  const [project, setProject] = useState(null); // ✅ FIXED
 
   const columns = ["Todo", "In Progress", "Done"];
 
@@ -28,7 +26,7 @@ export default function Tasks() {
   const loadMembers = async () => {
     const data = await getProject(projectId, token);
     setMembers(data.members || []);
-    setProject(data); // ✅ important
+    setProject(data);
   };
 
   useEffect(() => {
@@ -41,13 +39,13 @@ export default function Tasks() {
     if (!title || !assignedTo) return alert("Fill all fields");
 
     await createTask(
-      { title, projectId, assignedTo, dueDate }, // ✅ added dueDate
+      { title, projectId, assignedTo, dueDate },
       token
     );
 
     setTitle("");
     setAssignedTo("");
-    setDueDate(""); // ✅ reset
+    setDueDate("");
     load();
   };
 
@@ -57,24 +55,28 @@ export default function Tasks() {
     load();
   };
 
-  // ✅ ROLE LOGIC
-const myRole =
-  project?.admin?._id === user?._id ||
-  project?.admin === user?._id
-    ? "admin"
-    : "member";
+  // ✅ SAFE ROLE CALCULATION
+  const isAdmin =
+    project &&
+    (project.admin?._id === user?._id ||
+      project.admin === user?._id);
+
+  // ✅ PREVENT WRONG UI RENDER
+  if (!project) {
+    return <p style={{ padding: "20px" }}>Loading...</p>;
+  }
 
   return (
     <div className="container">
       <h1>Tasks</h1>
 
-      {/* ✅ ROLE DISPLAY */}
+      {/* ROLE DISPLAY */}
       <p style={{ marginBottom: "10px" }}>
-        Role: <b>{myRole === "admin" ? "Admin 👑" : "Member 👤"}</b>
+        Role: <b>{isAdmin ? "Admin 👑" : "Member 👤"}</b>
       </p>
 
-      {/* ✅ ADMIN ONLY CREATE TASK */}
-      {myRole === "admin" && (
+      {/* ADMIN ONLY CREATE TASK */}
+      {isAdmin && (
         <div className="card">
           <input
             placeholder="Task title"
@@ -82,7 +84,6 @@ const myRole =
             onChange={(e) => setTitle(e.target.value)}
           />
 
-          {/* ✅ NEW: due date */}
           <input
             type="date"
             value={dueDate}
@@ -105,14 +106,14 @@ const myRole =
         </div>
       )}
 
-      {/* ✅ MEMBER MESSAGE */}
-      {myRole !== "admin" && (
+      {/* MEMBER MESSAGE */}
+      {!isAdmin && (
         <p style={{ color: "gray", marginBottom: "10px" }}>
           You can only view tasks assigned to you.
         </p>
       )}
 
-      {/* KANBAN BOARD (UNCHANGED STRUCTURE) */}
+      {/* KANBAN */}
       <div className="kanban">
         {columns.map((col) => (
           <div key={col} className="column">
@@ -122,7 +123,16 @@ const myRole =
               <p style={{ opacity: 0.5 }}>No tasks</p>
             ) : (
               tasks
-                .filter((t) => t.status === col)
+                .filter((t) => {
+                  // ✅ MEMBER CAN ONLY SEE THEIR TASKS
+                  if (!isAdmin) {
+                    return (
+                      t.status === col &&
+                      t.assignedTo?._id === user?._id
+                    );
+                  }
+                  return t.status === col;
+                })
                 .map((t) => {
                   const isOverdue =
                     t.dueDate &&
@@ -131,17 +141,14 @@ const myRole =
 
                   return (
                     <div className="task-card" key={t._id}>
-                      {/* ✅ OVERDUE HIGHLIGHT */}
                       <p style={{ color: isOverdue ? "red" : "black" }}>
                         {t.title}
                       </p>
 
-                      {/* ✅ SHOW ASSIGNEE */}
                       <small>
                         {t.assignedTo?.email || "Unassigned"}
                       </small>
 
-                      {/* ✅ SHOW DUE DATE */}
                       {t.dueDate && (
                         <small>
                           Due:{" "}
@@ -149,17 +156,23 @@ const myRole =
                         </small>
                       )}
 
-                      {/* STATUS CHANGE */}
-                      <select
-                        value={t.status}
-                        onChange={(e) =>
-                          handleStatus(t._id, e.target.value)
-                        }
-                      >
-                        {columns.map((c) => (
-                          <option key={c}>{c}</option>
-                        ))}
-                      </select>
+                      {/* ONLY ADMIN CAN CHANGE STATUS */}
+                      {isAdmin ? (
+                        <select
+                          value={t.status}
+                          onChange={(e) =>
+                            handleStatus(t._id, e.target.value)
+                          }
+                        >
+                          {columns.map((c) => (
+                            <option key={c}>{c}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <p style={{ fontSize: "12px", opacity: 0.6 }}>
+                          Status: {t.status}
+                        </p>
+                      )}
                     </div>
                   );
                 })
