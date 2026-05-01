@@ -13,7 +13,7 @@ export default function Tasks() {
 
   const [dueDate, setDueDate] = useState("");
 
-  const user = JSON.parse(localStorage.getItem("user"));
+ const user = JSON.parse(localStorage.getItem("user") || "{}");
   const [project, setProject] = useState(null); // ✅ FIXED
 
   const columns = ["Todo", "In Progress", "Done"];
