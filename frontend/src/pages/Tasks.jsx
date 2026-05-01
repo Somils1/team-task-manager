@@ -18,9 +18,15 @@ export default function Tasks() {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  const tokenUser = token
+  let tokenUser = null;
+
+try {
+  tokenUser = token
     ? JSON.parse(atob(token.split(".")[1]))
     : null;
+} catch (e) {
+  console.error("Invalid token");
+}
 
   const [project, setProject] = useState(null);
 
