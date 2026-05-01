@@ -17,16 +17,23 @@ export default function Login() {
 
     const data = await loginUser({ email, password });
 
-    console.log("LOGIN RESPONSE:", data); // 🔥 DEBUG
+console.log("LOGIN RESPONSE:", data);
 
-    if (!data?.token || !data?.user) {
-      throw new Error("Invalid login response");
-    }
+// ✅ FIX: backend returns user directly, not inside data.user
+if (!data?.token || !data?._id) {
+  throw new Error("Invalid login response");
+}
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    localStorage.setItem("email", data.user.email);
+const user = {
+  _id: data._id,
+  email: data.email,
+  name: data.name,
+};
 
+localStorage.setItem("token", data.token);
+localStorage.setItem("user", JSON.stringify(user));
+localStorage.setItem("email", user.email);
+    
     navigate("/dashboard");
 
   } catch (err) {
