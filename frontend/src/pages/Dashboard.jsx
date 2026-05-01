@@ -1,77 +1,88 @@
  import { useEffect, useState } from "react";
 import { getProjects, getTasks } from "../api";
-import { useNavigate } from "react-router-dom";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
 
   const token = localStorage.getItem("token");
-  const email = localStorage.getItem("email");
-  const nav = useNavigate();
 
   useEffect(() => {
     load();
   }, []);
 
   const load = async () => {
-    try {
-      const proj = await getProjects(token);
-      setProjects(proj || []);
+    const p = await getProjects(token);
+    setProjects(p || []);
 
-      // 🔥 get all tasks from all projects
-      let allTasks = [];
-
-      for (let p of proj) {
-        const t = await getTasks(p._id, token);
-        allTasks = [...allTasks, ...(t || [])];
-      }
-
-      setTasks(allTasks);
-    } catch (err) {
-      console.error(err);
+    let allTasks = [];
+    for (let proj of p) {
+      const t = await getTasks(proj._id, token);
+      allTasks = [...allTasks, ...t];
     }
+    setTasks(allTasks);
   };
 
-  // ✅ DEFINE myTasks PROPERLY
-  const myTasks = tasks.filter(
-    (t) => t.assignedTo?.email === email
+  // status breakdown
+  const statusCount = {
+    Todo: 0,
+    "In Progress": 0,
+    Done: 0,
+  };
+
+  tasks.forEach((t) => {
+    statusCount[t.status]++;
+  });
+
+  const chartData = Object.keys(statusCount).map((key) => ({
+    name: key,
+    value: statusCount[key],
+  }));
+
+  // overdue
+  const overdue = tasks.filter(
+    (t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "Done"
   );
 
   return (
     <div className="container">
       <h1>Dashboard</h1>
 
-      {/* STATS */}
+      {/* stats */}
       <div className="grid">
-        <div className="stat-card">
-          <h3>Projects</h3>
-          <p>{projects.length}</p>
-        </div>
-
-        <div className="stat-card">
-          <h3>My Tasks</h3>
-          <p>{myTasks.length}</p>
-        </div>
-
-        <div className="stat-card">
-          <h3>Completed</h3>
-          <p>
-            {myTasks.filter(t => t.status === "Done").length}
-          </p>
-        </div>
+        <div className="card">Projects: {projects.length}</div>
+        <div className="card">Tasks: {tasks.length}</div>
+        <div className="card">Overdue: {overdue.length}</div>
       </div>
 
-      {/* PROJECT LIST */}
-      <div className="card">
-        <h3>Your Projects</h3>
+      {/* chart */}
+      <div className="card" style={{ height: 300 }}>
+        <h3>Task Distribution</h3>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={chartData} dataKey="value" outerRadius={100}>
+              <Cell fill="#3b82f6" />
+              <Cell fill="#f59e0b" />
+              <Cell fill="#10b981" />
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
 
-        {projects.map((p) => (
-          <div className="project-row" key={p._id}>
-            <span>{p.name}</span>
-            <button onClick={() => nav(`/tasks/${p._id}`)}>
-              Open
-            </button>
+      {/* overdue list */}
+      <div className="card">
+        <h3 style={{ color: "red" }}>Overdue Tasks</h3>
+        {overdue.map((t) => (
+          <div key={t._id} style={{ color: "red" }}>
+            {t.title}
           </div>
         ))}
       </div>
