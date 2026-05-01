@@ -48,15 +48,43 @@ router.post("/", protect, async (req, res) => {
 // 🔹 GET TASKS BY PROJECT
 router.get("/project/:projectId", protect, async (req, res) => {
   try {
-    const tasks = await Task.find({ project: req.params.projectId })
-      .populate("assignedTo", "name email");
+    const project = await Project.findById(req.params.projectId);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // check user is member
+    const member = project.members.find(
+      (m) => m.toString() === req.user._id.toString()
+    );
+
+    if (!member) {
+      return res.status(403).json({ message: "Not a project member" });
+    }
+
+    // check if admin
+    const isAdmin = project.admin.toString() === req.user._id.toString();
+
+    let tasks;
+
+    if (isAdmin) {
+      // 👑 admin → all tasks
+      tasks = await Task.find({ project: req.params.projectId })
+        .populate("assignedTo", "email");
+    } else {
+      // 👤 member → only their tasks
+      tasks = await Task.find({
+        project: req.params.projectId,
+        assignedTo: req.user._id,
+      }).populate("assignedTo", "email");
+    }
 
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-
 
 // 🔹 UPDATE TASK STATUS
 router.put("/:id", protect, async (req, res) => {

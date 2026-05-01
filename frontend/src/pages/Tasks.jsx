@@ -11,12 +11,9 @@ export default function Tasks() {
   const [assignedTo, setAssignedTo] = useState("");
   const [members, setMembers] = useState([]);
 
-  const columns = ["Todo", "In Progress", "Done"];
-
-  useEffect(() => {
-    load();
-    loadMembers();
-  }, []);
+  // ✅ ADD: user + project state
+  const user = JSON.parse(localStorage.getItem("user"));
+  const [project, setProject] = useState({});
 
   const load = async () => {
     const data = await getTasks(projectId, token);
@@ -26,55 +23,81 @@ export default function Tasks() {
   const loadMembers = async () => {
     const data = await getProject(projectId, token);
     setMembers(data.members || []);
+    setProject(data); // ✅ ADD
   };
 
-  // ✅ CREATE TASK
-  const handleCreate = async () => {
-    if (!title || !assignedTo) {
-      alert("Fill all fields");
-      return;
-    }
+  useEffect(() => {
+    load();
+    loadMembers();
+  }, []);
 
-    await createTask({ title, projectId, assignedTo }, token);
+  // CREATE TASK
+  const handleCreate = async () => {
+    if (!title || !assignedTo) return alert("Fill all fields");
+
+    await createTask(
+      { title, projectId, assignedTo },
+      token
+    );
+
     setTitle("");
-    setAssignedTo("");
     load();
   };
 
-  // ✅ UPDATE STATUS
+  // UPDATE STATUS
   const handleStatus = async (id, status) => {
     await updateTask(id, status, token);
     load();
   };
 
+  const columns = ["Todo", "In Progress", "Done"];
+
+  // ✅ ADD: role logic
+  const myRole =
+    project?.admin === user?._id ? "admin" : "member";
+
   return (
     <div className="container">
+      
+      {/* ✅ ADD: ROLE DISPLAY */}
       <h1>Tasks</h1>
+      <p style={{ marginBottom: "10px" }}>
+        Role: <b>{myRole === "admin" ? "Admin 👑" : "Member 👤"}</b>
+      </p>
 
-      {/* CREATE TASK */}
-      <div className="card">
-        <input
-          placeholder="Task title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+      {/* ✅ LOCK CREATE TASK */}
+      {myRole === "admin" && (
+        <div className="card">
+          <input
+            placeholder="Task title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
 
-        <select
-          value={assignedTo}
-          onChange={(e) => setAssignedTo(e.target.value)}
-        >
-          <option value="">Assign to</option>
-          {members.map((m) => (
-            <option key={m._id} value={m._id}>
-              {m.email}
-            </option>
-          ))}
-        </select>
+          <select
+            value={assignedTo}
+            onChange={(e) => setAssignedTo(e.target.value)}
+          >
+            <option value="">Assign to</option>
+            {members.map((m) => (
+              <option key={m._id} value={m._id}>
+                {m.email}
+              </option>
+            ))}
+          </select>
 
-        <button onClick={handleCreate}>Add Task</button>
-      </div>
+          <button onClick={handleCreate}>Add Task</button>
+        </div>
+      )}
 
-      {/* KANBAN */}
+      {/* ✅ OPTIONAL MESSAGE FOR MEMBER */}
+      {myRole !== "admin" && (
+        <p style={{ color: "gray", marginBottom: "10px" }}>
+          You are a member. Tasks are assigned by admin.
+        </p>
+      )}
+
+      {/* EXISTING KANBAN (UNCHANGED) */}
       <div className="kanban">
         {columns.map((col) => (
           <div key={col} className="column">
