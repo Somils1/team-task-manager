@@ -13,10 +13,11 @@ export default function Tasks() {
 
   const [dueDate, setDueDate] = useState("");
 
-  // keep your existing user (not removed)
+  // ✅ NEW: priority
+  const [priority, setPriority] = useState("Medium");
+
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // ✅ NEW: reliable user from token
   const tokenUser = token
     ? JSON.parse(atob(token.split(".")[1]))
     : null;
@@ -41,34 +42,31 @@ export default function Tasks() {
     loadMembers();
   }, []);
 
-  // CREATE TASK
   const handleCreate = async () => {
     if (!title || !assignedTo) return alert("Fill all fields");
 
     await createTask(
-      { title, projectId, assignedTo, dueDate },
+      { title, projectId, assignedTo, dueDate, priority }, // ✅ added priority
       token
     );
 
     setTitle("");
     setAssignedTo("");
     setDueDate("");
+    setPriority("Medium"); // reset
     load();
   };
 
-  // UPDATE STATUS
   const handleStatus = async (id, status) => {
     await updateTask(id, status, token);
     load();
   };
 
-  // ✅ FIXED ROLE LOGIC (FINAL)
   const isAdmin =
     project &&
     String(project.admin?._id || project.admin) ===
       String(tokenUser?.id);
 
-  // prevent UI mismatch
   if (!project) {
     return <p style={{ padding: "20px" }}>Loading...</p>;
   }
@@ -77,12 +75,10 @@ export default function Tasks() {
     <div className="container">
       <h1>Tasks</h1>
 
-      {/* ROLE DISPLAY */}
       <p style={{ marginBottom: "10px" }}>
         Role: <b>{isAdmin ? "Admin 👑" : "Member 👤"}</b>
       </p>
 
-      {/* ADMIN ONLY CREATE TASK */}
       {isAdmin && (
         <div className="card">
           <input
@@ -96,6 +92,16 @@ export default function Tasks() {
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />
+
+          {/* ✅ NEW: priority dropdown */}
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+          >
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+          </select>
 
           <select
             value={assignedTo}
@@ -113,14 +119,12 @@ export default function Tasks() {
         </div>
       )}
 
-      {/* MEMBER MESSAGE */}
       {!isAdmin && (
         <p style={{ color: "gray", marginBottom: "10px" }}>
           You can only view tasks assigned to you.
         </p>
       )}
 
-      {/* KANBAN */}
       <div className="kanban">
         {columns.map((col) => (
           <div key={col} className="column">
@@ -131,7 +135,6 @@ export default function Tasks() {
             ) : (
               tasks
                 .filter((t) => {
-                  // member sees only assigned tasks
                   if (!isAdmin) {
                     return (
                       t.status === col &&
@@ -156,6 +159,11 @@ export default function Tasks() {
                         {t.assignedTo?.email || "Unassigned"}
                       </small>
 
+                      {/* ✅ SHOW PRIORITY */}
+                      {t.priority && (
+                        <small>Priority: {t.priority}</small>
+                      )}
+
                       {t.dueDate && (
                         <small>
                           Due:{" "}
@@ -163,22 +171,17 @@ export default function Tasks() {
                         </small>
                       )}
 
-                      {isAdmin ? (
-                        <select
-                          value={t.status}
-                          onChange={(e) =>
-                            handleStatus(t._id, e.target.value)
-                          }
-                        >
-                          {columns.map((c) => (
-                            <option key={c}>{c}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <p style={{ fontSize: "12px", opacity: 0.6 }}>
-                          Status: {t.status}
-                        </p>
-                      )}
+                      {/* ✅ FIX: EVERYONE can update THEIR visible tasks */}
+                      <select
+                        value={t.status}
+                        onChange={(e) =>
+                          handleStatus(t._id, e.target.value)
+                        }
+                      >
+                        {columns.map((c) => (
+                          <option key={c}>{c}</option>
+                        ))}
+                      </select>
                     </div>
                   );
                 })
