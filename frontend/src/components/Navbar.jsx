@@ -12,10 +12,6 @@ export default function Navbar() {
     <div className="navbar">
       <div  className="logo"> <Link to="/dasboard">TaskFlow</Link></div>
 
-      <span className="badge">
-  {user?.role === "admin" ? "Admin" : "Member"}
-</span>
-
       <div className="nav-links">
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/projects">Projects</Link>

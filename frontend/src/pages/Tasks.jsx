@@ -11,9 +11,14 @@ export default function Tasks() {
   const [assignedTo, setAssignedTo] = useState("");
   const [members, setMembers] = useState([]);
 
-  // ✅ ADD: user + project state
+  // ✅ NEW: due date
+  const [dueDate, setDueDate] = useState("");
+
+  // ✅ NEW: user + project
   const user = JSON.parse(localStorage.getItem("user"));
   const [project, setProject] = useState({});
+
+  const columns = ["Todo", "In Progress", "Done"];
 
   const load = async () => {
     const data = await getTasks(projectId, token);
@@ -23,7 +28,7 @@ export default function Tasks() {
   const loadMembers = async () => {
     const data = await getProject(projectId, token);
     setMembers(data.members || []);
-    setProject(data); // ✅ ADD
+    setProject(data); // ✅ important
   };
 
   useEffect(() => {
@@ -36,11 +41,13 @@ export default function Tasks() {
     if (!title || !assignedTo) return alert("Fill all fields");
 
     await createTask(
-      { title, projectId, assignedTo },
+      { title, projectId, assignedTo, dueDate }, // ✅ added dueDate
       token
     );
 
     setTitle("");
+    setAssignedTo("");
+    setDueDate(""); // ✅ reset
     load();
   };
 
@@ -50,28 +57,33 @@ export default function Tasks() {
     load();
   };
 
-  const columns = ["Todo", "In Progress", "Done"];
-
-  // ✅ ADD: role logic
+  // ✅ ROLE LOGIC
   const myRole =
     project?.admin === user?._id ? "admin" : "member";
 
   return (
     <div className="container">
-      
-      {/* ✅ ADD: ROLE DISPLAY */}
       <h1>Tasks</h1>
+
+      {/* ✅ ROLE DISPLAY */}
       <p style={{ marginBottom: "10px" }}>
         Role: <b>{myRole === "admin" ? "Admin 👑" : "Member 👤"}</b>
       </p>
 
-      {/* ✅ LOCK CREATE TASK */}
+      {/* ✅ ADMIN ONLY CREATE TASK */}
       {myRole === "admin" && (
         <div className="card">
           <input
             placeholder="Task title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+          />
+
+          {/* ✅ NEW: due date */}
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
           />
 
           <select
@@ -90,14 +102,14 @@ export default function Tasks() {
         </div>
       )}
 
-      {/* ✅ OPTIONAL MESSAGE FOR MEMBER */}
+      {/* ✅ MEMBER MESSAGE */}
       {myRole !== "admin" && (
         <p style={{ color: "gray", marginBottom: "10px" }}>
-          You are a member. Tasks are assigned by admin.
+          You can only view tasks assigned to you.
         </p>
       )}
 
-      {/* EXISTING KANBAN (UNCHANGED) */}
+      {/* KANBAN BOARD (UNCHANGED STRUCTURE) */}
       <div className="kanban">
         {columns.map((col) => (
           <div key={col} className="column">
@@ -108,23 +120,46 @@ export default function Tasks() {
             ) : (
               tasks
                 .filter((t) => t.status === col)
-                .map((t) => (
-                  <div className="task-card" key={t._id}>
-                    <p>{t.title}</p>
-                    <small>{t.assignedTo?.email || "Unassigned"}</small>
+                .map((t) => {
+                  const isOverdue =
+                    t.dueDate &&
+                    new Date(t.dueDate).getTime() < Date.now() &&
+                    t.status !== "Done";
 
-                    <select
-                      value={t.status}
-                      onChange={(e) =>
-                        handleStatus(t._id, e.target.value)
-                      }
-                    >
-                      {columns.map((c) => (
-                        <option key={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                ))
+                  return (
+                    <div className="task-card" key={t._id}>
+                      {/* ✅ OVERDUE HIGHLIGHT */}
+                      <p style={{ color: isOverdue ? "red" : "black" }}>
+                        {t.title}
+                      </p>
+
+                      {/* ✅ SHOW ASSIGNEE */}
+                      <small>
+                        {t.assignedTo?.email || "Unassigned"}
+                      </small>
+
+                      {/* ✅ SHOW DUE DATE */}
+                      {t.dueDate && (
+                        <small>
+                          Due:{" "}
+                          {new Date(t.dueDate).toLocaleDateString()}
+                        </small>
+                      )}
+
+                      {/* STATUS CHANGE */}
+                      <select
+                        value={t.status}
+                        onChange={(e) =>
+                          handleStatus(t._id, e.target.value)
+                        }
+                      >
+                        {columns.map((c) => (
+                          <option key={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })
             )}
           </div>
         ))}
