@@ -34,10 +34,7 @@ export default function Tasks() {
     loadMembers();
   }, []);
 
-  console.log("USER:", user);
-console.log("PROJECT:", project);
-console.log("USER ID:", user?._id);
-console.log("ADMIN:", project?.admin);
+  
 
   // CREATE TASK
   const handleCreate = async () => {
