@@ -1,66 +1,63 @@
  import { useState } from "react";
-import { loginUser } from "../api"; // assuming this exists
+import { loginUser } from "../api";
 import { useNavigate } from "react-router-dom";
+
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
-
-  const handleLogin = async () => {
-    if (!email || !password) return alert("Fill all fields");
-
+  const login = async () => {
     try {
-      setLoading(true);
-
-      const data = await loginUser({ email, password });
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      navigate("/dashboard");
+      const res = await loginUser(email, password);
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("email", email);
+      window.location.href = "/dashboard";
     } catch (err) {
       alert("Login failed");
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <div className="login-page">
-      <div className="card">
-        <h2 className="logo">TaskFlow</h2>
-        <h1>Login</h1>
+    <div className="auth-container">
+      <div className="card auth-box">
+        <h2 style={{ marginBottom: "20px" }}>Login</h2>
 
-        {/* EMAIL */}
-        <div className="input-group">
-          <span className="icon">📧</span>
-          <input
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
+        <input
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        {/* PASSWORD */}
-        <div className="input-group">
-          <span className="icon">🔒</span>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        <input
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-        <button onClick={handleLogin} disabled={loading}>
-          {loading ? <span className="spinner"></span> : "Login"}
+        {/* ✅ FIXED BUTTON */}
+        <button
+          style={{
+            width: "100%",
+            marginTop: "15px",
+            fontWeight: "500",
+            fontSize: "15px"
+          }}
+          onClick={login}
+        >
+          Login
         </button>
 
-        <p>
-          New user? <span className="link">Signup</span>
+        {/* OPTIONAL CLEAN LINK */}
+        <p style={{ marginTop: "15px", fontSize: "14px" }}>
+          New user?{" "}
+          <span
+            style={{ color: "#2563eb", cursor: "pointer" }}
+            onClick={() => (window.location.href = "/signup")}
+          >
+            Signup
+          </span>
         </p>
       </div>
     </div>
