@@ -13,8 +13,15 @@ export default function Tasks() {
 
   const [dueDate, setDueDate] = useState("");
 
- const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const [project, setProject] = useState(null); // ✅ FIXED
+  // keep your existing user (not removed)
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // ✅ NEW: reliable user from token
+  const tokenUser = token
+    ? JSON.parse(atob(token.split(".")[1]))
+    : null;
+
+  const [project, setProject] = useState(null);
 
   const columns = ["Todo", "In Progress", "Done"];
 
@@ -33,8 +40,6 @@ export default function Tasks() {
     load();
     loadMembers();
   }, []);
-
-  
 
   // CREATE TASK
   const handleCreate = async () => {
@@ -57,13 +62,13 @@ export default function Tasks() {
     load();
   };
 
-  // ✅ SAFE ROLE CALCULATION
-const isAdmin = project && (
-  (typeof project.admin === "object" && project.admin._id === user?._id) ||
-  (typeof project.admin === "string" && project.admin === user?._id)
-);
+  // ✅ FIXED ROLE LOGIC (FINAL)
+  const isAdmin =
+    project &&
+    String(project.admin?._id || project.admin) ===
+      String(tokenUser?.id);
 
-  // ✅ PREVENT WRONG UI RENDER
+  // prevent UI mismatch
   if (!project) {
     return <p style={{ padding: "20px" }}>Loading...</p>;
   }
@@ -126,11 +131,11 @@ const isAdmin = project && (
             ) : (
               tasks
                 .filter((t) => {
-                  // ✅ MEMBER CAN ONLY SEE THEIR TASKS
+                  // member sees only assigned tasks
                   if (!isAdmin) {
                     return (
                       t.status === col &&
-                      t.assignedTo?._id === user?._id
+                      t.assignedTo?._id === tokenUser?.id
                     );
                   }
                   return t.status === col;
@@ -158,7 +163,6 @@ const isAdmin = project && (
                         </small>
                       )}
 
-                      {/* ONLY ADMIN CAN CHANGE STATUS */}
                       {isAdmin ? (
                         <select
                           value={t.status}
