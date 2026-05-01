@@ -1,5 +1,5 @@
  import { Link } from "react-router-dom";
-
+const user = JSON.parse(localStorage.getItem("user") || "null");
 export default function Navbar() {
   const email = localStorage.getItem("email");
 
