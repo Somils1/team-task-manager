@@ -9,24 +9,33 @@ export default function Login() {
 
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    if (!email || !password) return alert("Fill all fields");
+ const handleLogin = async () => {
+  if (!email || !password) return alert("Fill all fields");
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const data = await loginUser({ email, password });
+    const data = await loginUser({ email, password });
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+    console.log("LOGIN RESPONSE:", data); // 🔥 DEBUG
 
-      navigate("/dashboard");
-    } catch (err) {
-      alert("Login failed");
-    } finally {
-      setLoading(false);
+    if (!data?.token || !data?.user) {
+      throw new Error("Invalid login response");
     }
-  };
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("email", data.user.email);
+
+    navigate("/dashboard");
+
+  } catch (err) {
+    console.error(err);
+    alert("Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="login-page">
