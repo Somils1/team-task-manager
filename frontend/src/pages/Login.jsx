@@ -1,5 +1,5 @@
  import { useState } from "react";
-import { loginUser } from "../api"; // assuming this exists
+import { loginUser } from "../api";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
@@ -9,50 +9,47 @@ export default function Login() {
 
   const navigate = useNavigate();
 
- const handleLogin = async () => {
-  if (!email || !password) return alert("Fill all fields");
+  const handleLogin = async () => {
+    if (!email || !password) return alert("Fill all fields");
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const data = await loginUser({ email, password });
+      const data = await loginUser({ email, password });
 
-console.log("LOGIN RESPONSE:", data);
+      console.log("LOGIN RESPONSE:", data);
 
-// ✅ FIX: backend returns user directly, not inside data.user
-if (!data?.token || !data?._id) {
-  throw new Error("Invalid login response");
-}
+      if (!data?.token || !data?._id) {
+        throw new Error("Invalid login response");
+      }
 
-const user = {
-  _id: data._id,
-  email: data.email,
-  name: data.name,
-};
+      const user = {
+        _id: data._id,
+        email: data.email,
+        name: data.name,
+      };
 
-localStorage.setItem("token", data.token);
-localStorage.setItem("user", JSON.stringify(user));
-localStorage.setItem("email", user.email);
-    
-    navigate("/dashboard");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("email", user.email);
 
-  } catch (err) {
-    console.error(err);
-    alert("Login failed");
-  } finally {
-    setLoading(false);
-  }
-};
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      alert("Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="login-page">
-      <div className="card">
-        <h2 className="logo">TaskFlow</h2>
+      <div className="login-card">
+        <h2 className="logo">⚡ TaskFlow</h2>
         <h1>Login</h1>
 
-        {/* EMAIL */}
         <div className="input-group">
-          <span className="icon">📧</span>
+          <span>📧</span>
           <input
             placeholder="Email"
             value={email}
@@ -60,9 +57,8 @@ localStorage.setItem("email", user.email);
           />
         </div>
 
-        {/* PASSWORD */}
         <div className="input-group">
-          <span className="icon">🔒</span>
+          <span>🔒</span>
           <input
             type="password"
             placeholder="Password"
@@ -72,7 +68,7 @@ localStorage.setItem("email", user.email);
         </div>
 
         <button onClick={handleLogin} disabled={loading}>
-          {loading ? <span className="spinner"></span> : "Login"}
+          {loading ? <div className="spinner"></div> : "Login"}
         </button>
 
         <p>
