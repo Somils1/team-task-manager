@@ -14,7 +14,7 @@ export default function Signup() {
   }
 
   try {
-    const res = await signupUser(name, email, password);
+    const res = await signupUser({name, email, password});
 
     console.log("SIGNUP RESPONSE:", res);
 
