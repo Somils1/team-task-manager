@@ -9,12 +9,28 @@ export default function Signup() {
   const nav = useNavigate();
 
   const signup = async () => {
-    const res = await signupUser(name,email,password);
-    if(res.token){
-      localStorage.setItem("token",res.token);
-      nav("/projects");
+  if (!name || !email || !password) {
+    return alert("Fill all fields");
+  }
+
+  try {
+    const res = await signupUser(name, email, password);
+
+    console.log("SIGNUP RESPONSE:", res);
+
+    // ✅ FIX: don't check token
+    if (res?._id || res?.message) {
+      alert("Signup successful");
+      nav("/login");
+    } else {
+      alert(res.message || "Signup failed");
     }
-  };
+
+  } catch (err) {
+    console.error(err);
+    alert("Signup failed");
+  }
+};
 
   return (
     <div className="center">
