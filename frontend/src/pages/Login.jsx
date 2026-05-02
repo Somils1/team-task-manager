@@ -1,6 +1,7 @@
  import { useState } from "react";
 import { loginUser } from "../api";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -37,7 +38,6 @@ export default function Login() {
   navigate("/dashboard");
 }, 100);
 
-      navigate("/dashboard");
     } catch (err) {
       console.error(err);
       alert("Login failed");
@@ -76,8 +76,8 @@ export default function Login() {
         </button>
 
         <p>
-          New user? <span className="link">Signup</span>
-        </p>
+  New user? <Link to="/signup" className="link">Signup</Link>
+</p>
       </div>
     </div>
   );
