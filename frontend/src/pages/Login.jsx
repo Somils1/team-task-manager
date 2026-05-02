@@ -34,9 +34,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("email", user.email);
 
-      setTimeout(() => {
-  navigate("/dashboard");
-}, 100);
+  window.location.href = "/dashboard";
 
     } catch (err) {
       console.error(err);
