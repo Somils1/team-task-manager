@@ -1,4 +1,4 @@
- import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getProjects, getTasks } from "../api";
 import {
   PieChart,
@@ -11,33 +11,34 @@ import {
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
-
+  const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    load();
-  }, []);
+  if (!token) {
+  window.location.href = "/login";
+  return null;
+}
+
+ useEffect(() => {
+  if (token) load();
+}, [token]);
 
   const load = async () => {
   try {
     const p = await getProjects(token);
-    const safeProjects = Array.isArray(p) ? p : [];
-
-    setProjects(safeProjects);
+    setProjects(p || []);
 
     let allTasks = [];
-
-    for (let proj of safeProjects) {
+    for (let proj of p || []) {
       const t = await getTasks(proj._id, token);
-      const safeTasks = Array.isArray(t) ? t : [];
-      allTasks = [...allTasks, ...safeTasks];
+      allTasks = [...allTasks, ...(t || [])];
     }
 
     setTasks(allTasks);
   } catch (err) {
-    console.error("Dashboard load failed", err);
-    setProjects([]);
-    setTasks([]);
+    console.error(err);
+  } finally {
+    setLoading(false);
   }
 };
   // status breakdown
@@ -62,6 +63,8 @@ export default function Dashboard() {
   const overdue = tasks.filter(
     (t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "Done"
   );
+
+  if (loading) return <div className="container">Loading...</div>;
 
   return (
     <div className="container">

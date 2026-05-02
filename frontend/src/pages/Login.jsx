@@ -33,6 +33,10 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("email", user.email);
 
+      setTimeout(() => {
+  navigate("/dashboard");
+}, 100);
+
       navigate("/dashboard");
     } catch (err) {
       console.error(err);
